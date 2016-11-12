@@ -20,9 +20,13 @@ class SmartC
   end
 end
 
-class SPt < SmartC end
+class SPt < SmartC; end
 class DPt < SmartC
-  attr_reader :x, :y, :z
+  NAMES = [:x, :y, :z]
+  attr_reader *NAMES
+  NAMES.each do |n|
+    define_method("c#{n}") { send(n).round(3) + 300 }
+  end
 
   def initialize(x, y, z)
     @x, @y, @z = x, y, z
@@ -44,6 +48,10 @@ class SPt
     @r, @theta, @phi = r, theta, phi
   end
 
+  def rotate(dth, dp)
+    SPt[@r, theta + dth, phi + dp]
+  end
+
   def to_descart()
     DPt[
       r * Math.sin(theta) * Math.cos(phi),
@@ -55,8 +63,8 @@ end
 
 class Space
 
-  DEFAULT_ANGLE = grad_to_rad(20) #grad
-  DEFAULT_BOTTOM = 8 #points
+  DEFAULT_ANGLE = grad_to_rad(20) # grad
+  DEFAULT_BOTTOM = 8 # points
   DEFAULT_BH = DEFAULT_BOTTOM / 2
   A = DEFAULT_BH * Math.cos(DEFAULT_ANGLE)
   B = DEFAULT_BH * Math.sin(DEFAULT_ANGLE)
@@ -88,7 +96,7 @@ private
   def line(from, to)
     css = { stroke: 'black', stroke_width: DEFAULT_BH * 0.5 }
     @svg.build do
-      line(x1: from.x, y1: from.y, x2: to.x, y2: to.y, style: css)
+      line(x1: from.cx, y1: from.cy, x2: to.cx, y2: to.cy, style: css)
     end
   end
 
@@ -121,7 +129,7 @@ private
   # @param [DPt] pt
   # @return [String]
   def pstr(pt)
-    "#{pt.x}, #{pt.y}"
+    "#{pt.cx}, #{pt.cy}"
   end
 
   # @param [DPt] pt
@@ -154,7 +162,7 @@ end
 # @param [Array] points
 # @return [Number]
 def max_d(d, points)
-  points.map(&d).max + 50
+  points.map(&d).max + 350
 end
 
 # @param [Array] cb
@@ -182,26 +190,6 @@ def draw_coub(name, cb)
   s.save(name)
 end
 
-# @param [Array] points
-# @param [Number] angle_x
-# @param [Number] angle_y
-# @param [Number] angle_z
-# @return [Array]
-def rotate(points, angle_x, angle_y, angle_z)
-  points.map do |pt|
-    y = pt.y * Math.cos(angle_x) - pt.z * Math.sin(angle_x)
-    z = pt.y * Math.sin(angle_x) + pt.z * Math.cos(angle_x)
-
-    x = pt.x * Math.cos(angle_y) + z * Math.sin(angle_y)
-    z = - x * Math.sin(angle_y) + z * Math.cos(angle_y)
-
-    x = x * Math.cos(angle_z) - y * Math.sin(angle_z)
-    y = x * Math.sin(angle_z) + y * Math.cos(angle_z)
-
-    DPt[x, y, z]
-  end
-end
-
 def name(angles)
   tail = angles.map(&:to_s).join('_')
   "coub_#{tail}"
@@ -209,10 +197,10 @@ end
 
 def main(*angles)
   cb = coub(DPt[200, 200, 0], 100)
-  cb = rotate(cb, *angles.map(&method(:grad_to_rad)))
+  cb = cb.map(&:to_spheric)
+  # cb = cb.map { |pt| pt.rotate(*angles) }
+  cb = cb.map(&:to_descart)
   draw_coub(name(angles), cb)
 end
 
-main(20, 15, 5)
-main(20, 30, 5)
-main(20, 60, 5)
+main(0, 0)
