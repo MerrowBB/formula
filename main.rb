@@ -1,8 +1,10 @@
 require 'victor'
 
+# descart: x, y, z
+# spheric: r, theta, phi
 class Pt
   class << self
-    def [](x, y, z)
+    def[](x, y, z)
       self.new(x, y, z)
     end
   end
@@ -12,12 +14,27 @@ class Pt
   def initialize(x, y, z)
     @x, @y, @z = x, y, z
   end
+
+  def to_spheric()
+    new_x = Math.sqrt( x**2 + y**2 + z**2 )
+    new_y = Math.atan( Math.sqrt( x**2 + y**2 ) / z )
+    new_z = Math.atan( y / x )
+    return Pt[new_x, new_y, new_z]
+  end
+
+  def to_descart()
+    new_x = x * Math.sin(y) * Math.cos(z)
+    new_y = x * Math.sin(y) * Math.sin(z)
+    new_z = x * Math.cos(y)
+    return Pt[new_x, new_y, new_z]
+  end
+
 end
 
-class Formula
+class Space
 
-  DEFAULT_ANGLE = 20 * Math::PI / 180.0 # rad
-  DEFAULT_BOTTOM = 8 # point
+  DEFAULT_ANGLE = 20 * Math::PI / 180.0 #grad
+  DEFAULT_BOTTOM = 8  #points
   DEFAULT_BH = DEFAULT_BOTTOM / 2
   A = DEFAULT_BH * Math.cos(DEFAULT_ANGLE)
   B = DEFAULT_BH * Math.sin(DEFAULT_ANGLE)
@@ -69,7 +86,8 @@ private
     tr(to, q, t, fill: 'gray')
   end
 
-  # @param [Array] points
+  # @param [Pt] bottom
+  # @param [Pt] top
   # @param [Hash] css
   def tr(*points, **css)
     str = points.map(&method(:pstr)).join(' ')
@@ -81,16 +99,44 @@ private
   # @param [Pt] pt
   # @return [String]
   def pstr(pt)
-    "#{pt.x},#{pt.y}"
+    "#{pt.x}, #{pt.y}"
   end
 
   # @param [Pt] pt
-  # @param [Number] kx
-  # @param [Number] ky
+  # @return [Number] kx
+  # @return [Number] ky
   # @result [Pt]
   def ex(pt, kx, ky)
     Pt[pt.x + kx * A, pt.y + ky * B, 0]
   end
+end
+
+# @param [Pt] from
+# @param [Number] side
+# @return [Array]
+def coub(from, side)
+  side = side / 2
+  [ Pt[from.x - side, from.y - side, from.z - side], Pt[from.x - side, from.y + side, from.z - side],
+    Pt[from.x + side, from.y + side, from.z - side], Pt[from.x + side, from.y - side, from.z - side],
+    Pt[from.x - side, from.y - side, from.z + side], Pt[from.x - side, from.y + side, from.z + side],
+    Pt[from.x + side, from.y + side, from.z + side], Pt[from.x + side, from.y - side, from.z + side] ]
+end
+
+# @param [Space] s
+# @param [Array] cb
+def draw_coub(s, cb)
+  s.bond(cb[0], cb[1])
+  s.bond(cb[1], cb[2])
+  s.bond(cb[2], cb[3])
+  s.bond(cb[3], cb[0])
+  s.bond(cb[4], cb[5])
+  s.bond(cb[5], cb[6])
+  s.bond(cb[6], cb[7])
+  s.bond(cb[7], cb[4])
+  s.bond(cb[0], cb[4])
+  s.bond(cb[1], cb[5])
+  s.bond(cb[2], cb[6])
+  s.bond(cb[3], cb[7])
 end
 
 # @param [Array]
@@ -98,28 +144,29 @@ end
 # @option [Number] :angle_y
 # @option [Number] :angle_z
 # @return [Array]
-def rotate(*points, angle_x: 0, angle_y: 0, angle_z: 0)
-  # implement me!
+def rotate(points, angle_x, angle_y, angle_z)
+  new_points = Array.new
+  points.each do |pt|
+      y = pt.y * Math.cos(angle_x) - pt.z * Math.sin(angle_x)
+      z = pt.y * Math.sin(angle_x) + pt.z * Math.cos(angle_x)
+
+      x = pt.x * Math.cos(angle_y) + z * Math.sin(angle_y)
+      z = - x * Math.sin(angle_y) + z * Math.cos(angle_y)
+
+      x = x * Math.cos(angle_z) - y * Math.sin(angle_z)
+      y = x * Math.sin(angle_z) + y * Math.cos(angle_z)
+
+      new_points << Pt[x, y, z]
+  end
+  return new_points
 end
 
 def main
-  lb = Pt[5, 55, 1]
-  lm = Pt[25, 25, -1]
-  lt = Pt[15, 5, 0]
-
-  rb = Pt[65, 55, 1]
-  rm = Pt[85, 25, -1]
-  rt = Pt[75, 5, 0]
-
-  ps = rotate(lb, lm, lt, rb, rm, rt)
-
-  f = Formula.new(100, 100)
-  f.bond(lb, lt)
-  f.bond(lm, lt)
-  f.bond(lt, rt)
-  f.bond(rb, rt)
-  f.bond(rm, rt)
-  f.save('123')
+  s = Space.new(300, 300)
+  cb = coub(Pt[150,150,0], 100)
+  cb = rotate(cb, Math::PI/12, Math::PI/12, 0)
+  draw_coub(s, cb)
+  s.save('coub')
 end
 
 main
