@@ -1,10 +1,10 @@
 class BasePoint
   include Math
 
-  EPS = 0.1
+  EPS = 0.01
 
   def round(n)
-    n.round(3)
+    n.round(5)
   end
 
   class << self

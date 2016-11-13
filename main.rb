@@ -59,10 +59,12 @@ end
 def main(*angles)
   cb = coub(DPt[200, 200, 0], 100)
   cb = cb.map(&:spheric)
-  # cb = cb.map { |pt| pt.rotate(*angles) }
+  cb = cb.map { |pt| pt.rotate(*angles.map(&method(:grad_to_rad))) }
   cb = cb.map(&:descart)
-  cb = cb.map { |pt| pt + DPt[100, 100, 0] }
+  # cb = cb.map { |pt| pt + DPt[100, 100, 0] }
   draw_coub(full_name(angles), cb)
 end
 
-main(0, 0)
+main(0, 10)
+main(30, 10)
+main(60, 10)
