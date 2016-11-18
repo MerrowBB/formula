@@ -12,7 +12,20 @@ class DPt
   def initialize(x, y, z)
     @x, @y, @z = x, y, z
   end
+  
+  def rotate(dx, dy, dz)
+    new_y = y * Math.cos(dx) - z * Math.sin(dx) 
+    new_z = y * Math.sin(dx) + z * Math.cos(dx) 
 
+    new_x = x * Math.cos(dy) + new_z * Math.sin(dy) 
+    new_z = - new_x * Math.sin(dy) + new_z * Math.cos(dy) 
+
+    new_x = new_x * Math.cos(dz) - new_y * Math.sin(dz) 
+    new_y = new_x * Math.sin(dz) + new_y * Math.cos(dz) 
+
+    DPt[new_x, new_y, new_z]
+  end
+  
   def spheric
     r = sqrt(x**2 + y**2 + z**2)
     SPt[
