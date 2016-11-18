@@ -22,6 +22,13 @@ describe DPt do
     it { expect(big.spheric.descart).to eq(big) }
     it { expect(neg.spheric.descart).to eq(neg) }
   end
+  
+   describe '#rotate' do
+    it { expect(zero.rotate(30,30,30)).to eq(zero) }
+    it { expect(one.rotate(30,30,30)).to eq(DPt[1.28, -0.79, 0.86]) }
+    it { expect(sx.rotate(30,30,30)).to eq(DPt[2.93, -18.75, 121.5]) }
+  end
+  
 end
 
 describe SPt do
