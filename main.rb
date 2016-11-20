@@ -60,18 +60,19 @@ def main(*angles)
   if angles.size == 2
     cb = coub(DPt[200, 200, 0], 100)
     cb = cb.map(&:spheric)
-    cb = cb.map { |pt| pt.rotate(*angles.map(&method(:grad_to_rad))) }
+    cb = cb.map { |pt| pt.rotate(*angles) }
     cb = cb.map(&:descart)
-    # cb = cb.map { |pt| pt + DPt[100, 100, 0] }
+    №cb = cb.map { |pt| pt + DPt[100, 100, 0] }
     draw_coub("Spt_" + full_name(angles), cb)
   else
-    cb = coub(DPt[200, 200, 0], 100)
-    cb = cb.map { |pt| pt.rotate(*angles.map(&method(:grad_to_rad))) }
-    #cb = cb.map { |pt| pt + DPt[400, 300, 400] }
+    cb = coub(DPt[0, 0, 0], 100)
+    cb = cb.map { |pt| pt.rotate(*angles) }
+    cb = cb.map { |pt| pt + DPt[100, 100, 0] }
     draw_coub("Dpt_" + full_name(angles), cb)
   end
 end
 
-main(0, 10, 0)
-main(30, 10, 0)
-main(60, 10, 0)
+main(0, 0)
+main(30, 0)
+main(0, 30)
+main(30, 30)
