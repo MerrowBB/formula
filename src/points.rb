@@ -5,27 +5,28 @@ require_relative 'utils'
 class SPt < BasePoint; end
 class DPt < BasePoint; end
 
-
 class DPt
   properties :x, :y, :z
 
   def initialize(x, y, z)
     @x, @y, @z = x, y, z
   end
-  
+
   def rotate(dx, dy, dz)
+    dx, dy, dz = grad_to_rad(dx), grad_to_rad(dy), grad_to_rad(dz)
+
     new_y = y * Math.cos(dx) - z * Math.sin(dx) 
     new_z = y * Math.sin(dx) + z * Math.cos(dx) 
 
     new_x = x * Math.cos(dy) + new_z * Math.sin(dy) 
-    new_z = - new_x * Math.sin(dy) + new_z * Math.cos(dy) 
+    res_z = - x * Math.sin(dy) + new_z * Math.cos(dy) 
 
-    new_x = new_x * Math.cos(dz) - new_y * Math.sin(dz) 
-    new_y = new_x * Math.sin(dz) + new_y * Math.cos(dz) 
+    res_x = new_x * Math.cos(dz) - new_y * Math.sin(dz) 
+    res_y = new_x * Math.sin(dz) + new_y * Math.cos(dz) 
 
-    DPt[new_x, new_y, new_z]
+    DPt[res_x, res_y, res_z]
   end
-  
+
   def spheric
     r = sqrt(x**2 + y**2 + z**2)
     SPt[
