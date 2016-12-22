@@ -22,6 +22,13 @@ class BasePoint
         self.class[*args]
       end
 
+      define_method(:-) do |delta|
+        sv = method(:send)
+        dv = delta.method(:send)
+        args = names.map(&sv).zip(names.map(&dv)).map { |v, d| v - d }
+        self.class[*args]
+      end
+
       names.each do |name|
         define_method(name) do
           round(instance_variable_get(:"@#{name}"))
