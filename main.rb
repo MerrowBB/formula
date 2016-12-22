@@ -1,6 +1,7 @@
 require 'pry'
 
 require_relative 'src/space'
+require_relative 'src/shape'
 
 # @param [DPt] from
 # @param [Number] side
@@ -57,12 +58,19 @@ def full_name(angles)
 end
 
 def main(*angles)
+  #draws with Shape.rb (offset origin)
+  cb = coub(DPt[200, 200, 0], 100)
+  sh = Shape.new(cb)
+  sh = sh.rotate(*angles)
+  draw_coub("New" + full_name(angles), sh.points)
+
+  #draws as before
   if angles.size == 2
     cb = coub(DPt[200, 200, 0], 100)
     cb = cb.map(&:spheric)
     cb = cb.map { |pt| pt.rotate(*angles) }
     cb = cb.map(&:descart)
-    №cb = cb.map { |pt| pt + DPt[100, 100, 0] }
+    cb = cb.map { |pt| pt + DPt[100, 100, 0] }
     draw_coub("Spt_" + full_name(angles), cb)
   else
     cb = coub(DPt[0, 0, 0], 100)
@@ -74,5 +82,5 @@ end
 
 main(0, 0)
 main(30, 0)
-main(0, 30)
-main(30, 30)
+main(90, 0)
+main(135, 135)
